@@ -70,7 +70,8 @@ public class Main {
 		cdl.addElement(B);
 		cdl.addElement(C);
 		
-		InputStream stream = new FileInputStream("src/test/resources/BinarySearch.java");
+		///<--- Trocando o nome do arquivo, outras classes podem ser testadas
+		InputStream stream = new FileInputStream("src/test/resources/QuickSort.java"); 
 		ANTLRInputStream input = new ANTLRInputStream(stream);
 		xLexer lexer = new br.ufpe.cin.if688.minijava.antlr.xLexer(input);
 		CommonTokenStream token = new CommonTokenStream(lexer);
