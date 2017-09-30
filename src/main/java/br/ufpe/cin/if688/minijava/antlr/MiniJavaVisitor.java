@@ -35,6 +35,7 @@ import br.ufpe.cin.if688.minijava.ast.False;
 import br.ufpe.cin.if688.minijava.ast.Formal;
 import br.ufpe.cin.if688.minijava.ast.FormalList;
 import br.ufpe.cin.if688.minijava.ast.Identifier;
+import br.ufpe.cin.if688.minijava.ast.IdentifierExp;
 import br.ufpe.cin.if688.minijava.ast.IdentifierType;
 import br.ufpe.cin.if688.minijava.ast.If;
 import br.ufpe.cin.if688.minijava.ast.IntArrayType;
@@ -162,8 +163,9 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 		while(itStm.hasNext()) {
 			sl.addElement((Statement) itStm.next().accept(this));
 		}
-
-		Exp e = (Exp) ctx.expression().accept(this);
+		
+		Object auxE = ctx.expression().accept(this);
+		Exp e = (auxE instanceof Exp ? (Exp) auxE : new IdentifierExp(ctx.expression().getText()));
 		return new MethodDecl(t, i, fl, vdl, sl, e);
 	}
 
@@ -189,25 +191,32 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 				}
 				return new Block(sl);
 			case "if" :
-				Exp e = (Exp) ctx.expression(0).accept(this);
+				Object auxE = ctx.expression(0).accept(this);
+				Exp e = (auxE instanceof Exp ? (Exp) auxE : new IdentifierExp(ctx.expression(0).getText()));
 				Statement s1 = (Statement) ctx.statement(0).accept(this);
 				Statement s2 = (Statement) ctx.statement(1).accept(this);
 				return new If(e, s1, s2);
 			case "while" :
-				Exp e1 = (Exp) ctx.expression(0).accept(this);
+				Object auxE1 = ctx.expression(0).accept(this);
+				Exp e1 = (auxE1 instanceof Exp ? (Exp) auxE1 : new IdentifierExp(ctx.expression(0).getText()));
 				Statement s3 = (Statement) ctx.statement(0).accept(this);
 				return new While(e1, s3);
 			case "System.out.println" :
-				return new Print((Exp) ctx.expression(0).accept(this));
+				Object auxE2 = ctx.expression(0).accept(this);
+				Exp e2 = (auxE2 instanceof Exp ? (Exp) auxE2 : new IdentifierExp(ctx.expression(0).getText()));
+				return new Print(e2);
 			default: 
 				if(ctx.expression().size() == 1) {
 					Identifier i = (Identifier) ctx.identifier().accept(this);
-					Exp e2 = (Exp) ctx.expression(0).accept(this);
-					return new Assign(i, e2);
+					Object auxE3 = ctx.expression(0).accept(this);
+					Exp e3 = (auxE3 instanceof Exp ? (Exp) auxE3 : new IdentifierExp(ctx.expression(0).getText()));
+					return new Assign(i, e3);
 				} else {
 					Identifier i = (Identifier) ctx.identifier().accept(this);
-					Exp e3 = (Exp) ctx.expression(0).accept(this);
-					Exp e4 = (Exp) ctx.expression(1).accept(this);
+					Object auxE3 = ctx.expression(0).accept(this);
+					Object auxE4 = ctx.expression(1).accept(this);
+					Exp e3 = (auxE3 instanceof Exp ? (Exp) auxE3 : new IdentifierExp(ctx.expression(0).getText()));
+					Exp e4 = (auxE4 instanceof Exp ? (Exp) auxE4 : new IdentifierExp(ctx.expression(1).getText()));
 					return new ArrayAssign(i, e3, e4);
 				}
 		}
@@ -218,17 +227,21 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 		int numExp = ctx.expression().size();
 		int numChild = ctx.getChildCount();
 		
-		if(numChild >= 5) {
+		if(numChild >= 5 && ctx.getChild(1).getText().equals(".")) {
 			String op = ctx.getChild(3).getText();
 			if (op.equals("(")) {
-				Exp e = (Exp) ctx.expression(0).accept(this);
+				Object auxE = ctx.expression(0).accept(this);
+				Exp e = (auxE instanceof Exp ? (Exp) auxE : new IdentifierExp(ctx.expression(0).getText()));
 				Identifier i = (Identifier) ctx.identifier().accept(this);
 
 				ExpList el = new ExpList();
 				Iterator<ExpressionContext> ite = ctx.expression().iterator();
 				ite.next();
 				while(ite.hasNext()) {
-					el.addElement((Exp) ite.next().accept(this));
+					ExpressionContext ectx = ite.next();
+					Object auxE1 = ectx.accept(this);
+					Exp e1 = (auxE1 instanceof Exp ? (Exp) auxE1 : new IdentifierExp(ectx.getText()));
+					el.addElement(e1);
 				}
 
 				return new Call(e, i, el);
@@ -236,8 +249,10 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 		}
 
 		if (numExp == 2) {
-			Exp e1 = (Exp) ctx.expression(0).accept(this);
-			Exp e2 = (Exp) ctx.expression(1).accept(this);
+			Object auxE1 = ctx.expression(0).accept(this);
+			Object auxE2 = ctx.expression(1).accept(this);
+			Exp e1 = (auxE1 instanceof Exp ? (Exp) auxE1 : new IdentifierExp(ctx.expression(0).getText()));
+			Exp e2 = (auxE2 instanceof Exp ? (Exp) auxE2 : new IdentifierExp(ctx.expression(1).getText()));
 			
 			if (numChild == 3) {
 				switch(ctx.getChild(1).getText()) {
@@ -249,11 +264,12 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 				}
 			} else return new ArrayLookup(e1, e2);
 		} else if (numExp == 1) {
-			Exp e = (Exp) ctx.expression(0).accept(this);
+			Object auxE = ctx.expression(0).accept(this);
+			Exp e = (auxE instanceof Exp ? (Exp) auxE : new IdentifierExp(ctx.expression(0).getText()));
 			switch(ctx.getChild(1).getText()) {
 				case "!"   : return new Not(e);
 				case "."   : return new ArrayLength(e);
-				case "("   : return (Exp) ctx.expression(0).accept(this);
+				case "("   : return e;
 				default    : return new NewArray(e);
 			}
 		} else {
