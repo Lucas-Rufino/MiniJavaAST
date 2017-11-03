@@ -21,7 +21,9 @@ import br.ufpe.cin.if688.minijava.ast.Print;
 import br.ufpe.cin.if688.minijava.ast.Program;
 import br.ufpe.cin.if688.minijava.ast.VarDecl;
 import br.ufpe.cin.if688.minijava.ast.VarDeclList;
+import br.ufpe.cin.if688.minijava.visitor.BuildSymbolTableVisitor;
 import br.ufpe.cin.if688.minijava.visitor.PrettyPrintVisitor;
+import br.ufpe.cin.if688.minijava.visitor.TypeCheckVisitor;
 import br.ufpe.cin.if688.minijava.antlr.MiniJavaVisitor;
 import br.ufpe.cin.if688.minijava.antlr.xLexer;
 import br.ufpe.cin.if688.minijava.antlr.xParser;
@@ -29,6 +31,7 @@ import br.ufpe.cin.if688.minijava.antlr.xParser;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
+		/*
 		MainClass main = new MainClass(
 				new Identifier("Teste"), 
 				new Identifier("Testando"), 
@@ -69,7 +72,7 @@ public class Main {
 		cdl.addElement(A);
 		cdl.addElement(B);
 		cdl.addElement(C);
-		
+		*/
 		///<--- Trocando o nome do arquivo, outras classes podem ser testadas
 		InputStream stream = new FileInputStream("src/test/resources/QuickSort.java"); 
 		ANTLRInputStream input = new ANTLRInputStream(stream);
@@ -77,6 +80,12 @@ public class Main {
 		CommonTokenStream token = new CommonTokenStream(lexer);
 		
 		Program p = (Program) new MiniJavaVisitor().visit(new xParser(token).goal());
+		
+		BuildSymbolTableVisitor bstv = new BuildSymbolTableVisitor();
+		bstv.visit(p);
+		
+		TypeCheckVisitor tcv = new TypeCheckVisitor(bstv.getSymbolTable());
+		tcv.visit(p);
 		
 		PrettyPrintVisitor ppv = new PrettyPrintVisitor();
 		ppv.visit(p);

@@ -264,13 +264,14 @@ public class MiniJavaVisitor implements xVisitor<Object> {
 				}
 			} else return new ArrayLookup(e1, e2);
 		} else if (numExp == 1) {
+			
 			Object auxE = ctx.expression(0).accept(this);
 			Exp e = (auxE instanceof Exp ? (Exp) auxE : new IdentifierExp(ctx.expression(0).getText()));
-			switch(ctx.getChild(1).getText()) {
+			switch(ctx.getStart().getText()) {
+				case "new" : return new NewArray(e);
 				case "!"   : return new Not(e);
-				case "."   : return new ArrayLength(e);
 				case "("   : return e;
-				default    : return new NewArray(e);
+				default    : return new ArrayLength(e);
 			}
 		} else {
 			String s = ctx.getStart().getText();

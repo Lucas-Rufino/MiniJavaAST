@@ -1,10 +1,10 @@
 grammar x;
 
-goal: mainClass (classDeclaration)* EOF;
+goal: mainClass ( classDeclaration )* EOF;
 
 mainClass: 'class' identifier '{' 'public' 'static' 'void' 'main' '(' 'String' '[' ']' identifier ')' '{' statement '}' '}';
 
-classDeclaration: 'class' identifier ('extends' identifier)? '{' ( varDeclaration )* ( methodDeclaration )* '}';
+classDeclaration: 'class' identifier ( 'extends' identifier )? '{' ( varDeclaration )* ( methodDeclaration )* '}';
 
 varDeclaration: type identifier ';';
 
